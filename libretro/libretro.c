@@ -963,7 +963,7 @@ static void check_variables(bool startup) {
 
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		int value = atoi(var.value);
-		if (value != FSettings.SndRate) {
+		if (value != FSettings.SndRate || startup) {
 			FCEUI_Sound(value);
 			audio_video_updated |= 2;
 		}
@@ -997,7 +997,7 @@ static void check_variables(bool startup) {
 		} else if (!strcmp(var.value, "monochrome")) {
 			use_ntsc_filter = NTSC_MONOCHROME;
 		}
-		if (use_ntsc_filter != orig_value) {
+		if (use_ntsc_filter != orig_value || startup) {
 			ResetPalette();
 			audio_video_updated = 2;
 		}
@@ -1063,7 +1063,7 @@ static void check_variables(bool startup) {
 		else if (!strcmp(var.value, PAL_ROYAL_TEA))
 			current_palette = 13;
 
-		if (current_palette != orig_value) {
+		if (current_palette != orig_value || startup) {
 			audio_video_updated = 1;
 			ResetPalette();
 		}
@@ -1201,7 +1201,7 @@ static void check_variables(bool startup) {
 
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		unsigned newval = atoi(var.value);
-		if (newval != overscan_left) {
+		if (newval != overscan_left || startup) {
 			overscan_left       = newval;
 			audio_video_updated = 1;
 		}
@@ -1211,7 +1211,7 @@ static void check_variables(bool startup) {
 
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		unsigned newval = atoi(var.value);
-		if (newval != overscan_right) {
+		if (newval != overscan_right || startup) {
 			overscan_right      = newval;
 			audio_video_updated = 1;
 		}
@@ -1221,7 +1221,7 @@ static void check_variables(bool startup) {
 
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		unsigned newval = atoi(var.value);
-		if (newval != overscan_top) {
+		if (newval != overscan_top || startup) {
 			overscan_top        = newval;
 			audio_video_updated = 1;
 		}
@@ -1231,7 +1231,7 @@ static void check_variables(bool startup) {
 
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		unsigned newval = atoi(var.value);
-		if (newval != overscan_bottom) {
+		if (newval != overscan_bottom || startup) {
 			overscan_bottom     = newval;
 			audio_video_updated = 1;
 		}
@@ -1256,7 +1256,7 @@ static void check_variables(bool startup) {
 		} else if (!strcmp(var.value, "PP")) {
 			aspect_ratio_par = 3;
 		}
-		if (aspect_ratio_par != oldval) {
+		if (aspect_ratio_par != oldval || startup) {
 			audio_video_updated = 1;
 		}
 	}
@@ -1297,7 +1297,7 @@ static void check_variables(bool startup) {
 		} else if (!strcmp(var.value, "Dendy")) {
 			opt_region = 3;
 		}
-		if (opt_region != oldval) {
+		if (opt_region != oldval || startup) {
 			set_system_region(opt_region);
 			audio_video_updated = 2;
 		}
@@ -1314,7 +1314,7 @@ static void check_variables(bool startup) {
 		} else if (!strcmp(var.value, "Very High")) {
 			sndquality = 2;
 		}
-		if (sndquality != oldval) {
+		if (sndquality != oldval || startup) {
 			FCEUI_SetSoundQuality(sndquality);
 		}
 	}
