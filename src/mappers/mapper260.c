@@ -71,6 +71,14 @@ static void M260PW(uint16 A, uint16 V) {
 	}
 }
 
+static void M260MIR(void) {
+	if (reg[0] & 0x04) {
+		setmirror(((reg[3] >> 2) & 0x01) ^ 0x01);
+	} else {
+		setmirror((mmc3.mirr & 0x01) ^ 0x01);
+	}
+}
+
 static DECLFR(M260Read) {
 	return ((cpu.openbus & ~0x03) | (dipsw & 0x03));
 }
@@ -80,13 +88,15 @@ static DECLFW(M260WriteReg) {
 		reg[A & 0x03] = V;
 		MMC3_FixPRG();
 		MMC3_FixCHR();
+		MMC3_FixMIR();
 	}
 }
 
 static DECLFW(M260WriteLatch) {
-	if((reg[0] & 0xE6) == 0x06 ) {
+	if(reg[0] & 0x04) {
 		reg[3] = V;
 		MMC3_FixCHR();
+		MMC3_FixMIR();
 	} else {
 		MMC3_Write(A, V);
 	}
@@ -113,6 +123,7 @@ void Mapper260_Init(CartInfo *info) {
 	MMC3_Init(info, MMC3B, 0, 0);
 	MMC3_cwrap = M260CW;
 	MMC3_pwrap = M260PW;
+	MMC3_FixMIR = M260MIR;
 	info->Power = M260Power;
 	info->Reset = M260Reset;
 	AddExState(StateRegs, ~0, 0, NULL);
