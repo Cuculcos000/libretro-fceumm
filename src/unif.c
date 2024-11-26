@@ -22,7 +22,6 @@
 /* **INCOMPLETE**             */
 /* Override stuff: CHR RAM instead of CHR ROM,   mirroring. */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 

@@ -21,8 +21,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <streams/file_stream.h>
-
 #include "fceu-types.h"
 #include "x6502.h"
 #include "fceu.h"
@@ -30,35 +28,29 @@
 #include "cart.h"
 
 void FCEUI_DumpVid(const char *fname, uint32 start, uint32 end) {
-	RFILE *fp = filestream_open(fname,
-			RETRO_VFS_FILE_ACCESS_WRITE,
-			RETRO_VFS_FILE_ACCESS_HINT_NONE);
+	FILE *fp = fopen(fname, "wb");
 	fceuindbg = 1;
 	start &= 0x3FFF;
 	end &= 0x3FFF;
 	for (; start <= end; start++)
-		filestream_putc(fp, VPage[start >> 10][start]);
-	filestream_close(fp);
+		fputc(VPage[start >> 10][start], fp);
+	fclose(fp);
 	fceuindbg = 0;
 }
 
 void FCEUI_DumpMem(const char *fname, uint32 start, uint32 end) {
-	RFILE *fp = filestream_open(fname,
-			RETRO_VFS_FILE_ACCESS_WRITE,
-			RETRO_VFS_FILE_ACCESS_HINT_NONE);
+	FILE *fp = fopen(fname,"wb");
 	fceuindbg = 1;
 	for (; start <= end; start++)
-		filestream_putc(fp, ARead[start](start));
-	filestream_close(fp);
+		fputc(fp, ARead[start](start));
+	fclose(fp);
 	fceuindbg = 0;
 }
 
 void FCEUI_LoadMem(const char *fname, uint32 start, int hl) {
 	int t;
-	RFILE *fp = filestream_open(fname,
-			RETRO_VFS_FILE_ACCESS_READ,
-			RETRO_VFS_FILE_ACCESS_HINT_NONE);
-	while ((t = filestream_getc(fp)) >= 0) {
+	FILE *fp = fopen(fname, "rb");
+	while ((t = fgetc(fp)) >= 0) {
 		if (start > 0xFFFF) break;
 		if (hl) {
 			extern uint8 *Page[32];
@@ -68,7 +60,7 @@ void FCEUI_LoadMem(const char *fname, uint32 start, int hl) {
 			BWrite[start](start, t);
 		start++;
 	}
-	filestream_close(fp);
+	fclose(fp);
 }
 
 #ifdef FCEUDEF_DEBUGGER

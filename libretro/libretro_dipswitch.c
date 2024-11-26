@@ -1,10 +1,9 @@
-#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../fceu.h"
 #include "../../fceu-types.h"
+#include "../../fceu.h"
 #include "../../vsuni.h"
 #include "../../git.h"
 #include "../../driver.h"

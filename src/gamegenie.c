@@ -18,9 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <string/stdstring.h>
-#include <file/file_path.h>
-#include <streams/file_stream.h>
+#include <string.h>
 
 #include "fceu-types.h"
 #include "fceu.h"
@@ -48,7 +46,7 @@ static void FlushGenieRW(void);
 
 /* Called when a game(file) is opened successfully. */
 void FCEU_OpenGenie(void) {
-	RFILE *fp = NULL;
+	FILE *fp = NULL;
 	int x;
 
 	if (!GENIEROM) {
@@ -60,9 +58,7 @@ void FCEU_OpenGenie(void) {
 
 		fn = FCEU_MakeFName(FCEUMKF_GGROM, 0, 0);
 
-		if (!string_is_empty(fn) && path_is_valid(fn)) {
-			fp = filestream_open(fn, RETRO_VFS_FILE_ACCESS_READ, RETRO_VFS_FILE_ACCESS_HINT_NONE);
-		}
+		fp = fopen(fn, "r");
 
 		FCEU_free(fn);
 		fn = NULL;
@@ -70,35 +66,35 @@ void FCEU_OpenGenie(void) {
 		if (!fp) {
 			FCEU_PrintError("Error opening Game Genie ROM image!\n");
 			FCEUD_DispMessage(RETRO_LOG_WARN, 3000, "Game Genie ROM image (gamegenie.nes) missing");
-			free(GENIEROM);
+			FCEU_free(GENIEROM);
 			GENIEROM = 0;
 			return;
 		}
-		if (filestream_read(fp, GENIEROM, 16) != 16) {
+		if (fread(GENIEROM, 1, 16, fp) != 16) {
 grerr:
 			FCEU_PrintError("Error reading from Game Genie ROM image!\n");
 			FCEUD_DispMessage(RETRO_LOG_WARN, 3000, "Failed to read Game Genie ROM image (gamegenie.nes)");
-			free(GENIEROM);
+			FCEU_free(GENIEROM);
 			GENIEROM = 0;
-			filestream_close(fp);
+			fclose(fp);
 			return;
 		}
 		if (GENIEROM[0] == 0x4E) { /* iNES ROM image */
-			if (filestream_read(fp, GENIEROM, 4096) != 4096) {
+			if (fread(GENIEROM, 1, 4096, fp) != 4096) {
 				goto grerr;
 			}
-			if (filestream_seek(fp, 16384 - 4096, RETRO_VFS_SEEK_POSITION_CURRENT)) {
+			if (fseek(fp, 16384 - 4096, SEEK_CUR)) {
 				goto grerr;
 			}
-			if (filestream_read(fp, GENIEROM + 4096, 256) != 256) {
+			if (fread(GENIEROM + 4096, 1, 256, fp) != 256) {
 				goto grerr;
 			}
 		} else {
-			if (filestream_read(fp, GENIEROM + 16, 4352 - 16) != (4352 - 16)) {
+			if (fread(GENIEROM + 16, 1, 4352 - 16, fp) != (4352 - 16)) {
 				goto grerr;
 			}
 		}
-		filestream_close(fp);
+		fclose(fp);
 
 		/* Workaround for the FCE Ultra CHR page size only being 1KB */
 		for (x = 0; x < 4; x++) {
@@ -119,7 +115,7 @@ void FCEU_CloseGenie(void) {
 
 void FCEU_KillGenie(void) {
 	if (GENIEROM) {
-		free(GENIEROM);
+		FCEU_free(GENIEROM);
 		GENIEROM = 0;
 	}
 }
@@ -153,8 +149,8 @@ static void FlushGenieRW(void) {
 			ARead[x + 0x8000]  = AReadG[x];
 			BWrite[x + 0x8000] = BWriteG[x];
 		}
-		free(AReadG);
-		free(BWriteG);
+		FCEU_free(AReadG);
+		FCEU_free(BWriteG);
 		AReadG  = NULL;
 		BWriteG = NULL;
 	}

@@ -23,7 +23,12 @@
 #define __FCEU_TYPES_H
 
 #include <stdint.h>
+#ifdef __LIBRETRO__
 #include <retro_inline.h>
+#include <streams/file_stream_transforms.h>
+#else
+#include <stdio.h>
+#endif
 
 typedef int8_t int8;
 typedef int16_t int16;

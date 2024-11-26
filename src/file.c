@@ -26,10 +26,6 @@
 #include <unistd.h>
 #endif
 
-#include <string/stdstring.h>
-#include <file/file_path.h>
-#include <streams/file_stream.h>
-
 #include "fceu-types.h"
 #include "file.h"
 #include "fceu-endian.h"
@@ -37,7 +33,7 @@
 #include "driver.h"
 #include "general.h"
 
-static MEMWRAP *MakeMemWrap(RFILE *tz) {
+static MEMWRAP *MakeMemWrap(FILE *tz) {
 	MEMWRAP *tmp = NULL;
 
 	if (!(tmp = (MEMWRAP *)FCEU_malloc(sizeof(MEMWRAP)))) {
@@ -45,9 +41,9 @@ static MEMWRAP *MakeMemWrap(RFILE *tz) {
    }
 	tmp->location = 0;
 
-	filestream_seek(tz, 0, RETRO_VFS_SEEK_POSITION_END);
-	tmp->size = filestream_tell(tz);
-	filestream_seek(tz, 0, RETRO_VFS_SEEK_POSITION_START);
+	fseek(tz, 0, SEEK_END);
+	tmp->size = ftell(tz);
+	fseek(tz, 0, SEEK_CUR);
 
 	if (!(tmp->data_int = (uint8 *)FCEU_malloc(tmp->size))) {
 		FCEU_free(tmp);
@@ -55,7 +51,7 @@ static MEMWRAP *MakeMemWrap(RFILE *tz) {
 		goto doret;
 	}
 
-	filestream_read(tz, tmp->data_int, tmp->size);
+	fread(tmp->data_int, 1, tmp->size, tz);
 	tmp->data = tmp->data_int;
 
 doret:
@@ -79,34 +75,30 @@ static MEMWRAP *MakeMemWrapBuffer(const uint8 *buffer, size_t bufsize) {
 
 FCEUFILE *FCEU_fopen(const char *path, const uint8 *buffer, size_t bufsize) {
 	FCEUFILE *fceufp = (FCEUFILE *)FCEU_malloc(sizeof(FCEUFILE));
-   RFILE *t = NULL;
+	FILE *t = NULL;
 
-   if (!fceufp) {
-      return NULL;
-   }
+	if (!fceufp) {
+		return NULL;
+	}
 
 	if (buffer) {
 		fceufp->fp = MakeMemWrapBuffer(buffer, bufsize);
-      if (!fceufp->fp) {
-         FCEU_free(fceufp);
-         return NULL;
-      }
-      return fceufp;
-   }
+		if (!fceufp->fp) {
+			FCEU_free(fceufp);
+			return NULL;
+		}
+		return fceufp;
+	}
 
-   if (!string_is_empty(path) && path_is_valid(path)) {
-	  t = filestream_open(path, RETRO_VFS_FILE_ACCESS_READ, RETRO_VFS_FILE_ACCESS_HINT_NONE);
-   }
+	t = fopen(path, "rb");
+	if (t) {
+		fceufp->fp = MakeMemWrap(t);
+		fclose(t);
+		return fceufp;
+	}
 
-   if (!t) {
-	  FCEU_free(fceufp);
-	  return NULL;
-   }
-
-   fceufp->fp = MakeMemWrap(t);
-   filestream_close(t);
-
-   return fceufp;
+	FCEU_free(fceufp);
+	return NULL;
 }
 
 int FCEU_fclose(FCEUFILE *fp) {

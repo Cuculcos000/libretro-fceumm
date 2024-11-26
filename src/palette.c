@@ -21,10 +21,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <string/stdstring.h>
-#include <file/file_path.h>
-#include <streams/file_stream.h>
-
 #include "fceu-types.h"
 #include "fceu-memory.h"
 #include "fceu.h"

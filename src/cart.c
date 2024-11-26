@@ -21,10 +21,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <string/stdstring.h>
-#include <file/file_path.h>
-#include <streams/file_stream.h>
-
 #include "fceu-types.h"
 #include "fceu.h"
 #include "ppu.h"

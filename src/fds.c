@@ -21,7 +21,6 @@
 /* dec-12-19                                    */
 /* 4024(w), 4025(w), 4031(r) by dink(fbneo)     */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
