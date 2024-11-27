@@ -70,12 +70,12 @@ static ENVUNIT EnvUnits[3];
 static const int RectDuties[4] = { 1, 2, 4, 6 };
 
 static int32 RectDutyCount[2];
-static uint8 sweepon[2];
+static uint8 SweepOn[2];
 static int32 curfreq[2];
 static uint8 SweepCount[2];
-static uint8 sweepReload[2];
-static uint8 sweepShift[2];
-static uint8 sweepPeriod[2];
+static uint8 SweepReload[2];
+static uint8 SweepShift[2];
+static uint8 SweepPeriod[2];
 
 static uint16 nreg = 0;
 
@@ -209,10 +209,10 @@ static DECLFW(Write_PSG) {
 
 	case 0x1:
 		DoSQ1();
-		sweepReload[0] = 1;
-		sweepShift[0] = V & 0x07;
-		sweepPeriod[0] = ((V >> 4) & 0x7) + 1;
-		sweepon[0] = (V & 0x80) && sweepShift[0];
+		SweepReload[0] = 1;
+		SweepShift[0] = V & 0x07;
+		SweepPeriod[0] = ((V >> 4) & 0x7) + 1;
+		SweepOn[0] = (V & 0x80) != 0;
 		break;
 
 	case 0x2:
@@ -237,10 +237,10 @@ static DECLFW(Write_PSG) {
 
 	case 0x5:
 		DoSQ2();
-		sweepReload[1] = 1;
-		sweepShift[1] = V & 0x07;
-		sweepPeriod[1] = ((V >> 4) & 0x7) + 1;
-		sweepon[1] = (V & 0x80) && sweepShift[1];
+		SweepReload[1] = 1;
+		SweepShift[1] = V & 0x07;
+		SweepPeriod[1] = ((V >> 4) & 0x7) + 1;
+		SweepOn[1] = (V & 0x80) != 0;
 		break;
 
 	case 0x6:
@@ -394,49 +394,48 @@ static void FrameSoundStuff(int V) {
 	DoNoise();
 	DoTriangle();
 
-	if (V & 1) {	/* Envelope decay, linear counter, length counter, freq sweep */
-		if (!(PSG[8] & 0x80)) {
-			if (lengthcount[2] > 0) {
-				lengthcount[2]--;
-			}
+	/* Envelope decay, linear counter, length counter, freq Sweep */
+	if (!(V & 1)) {
+		/* decrease triagle channel counter */
+		if (!(PSG[8] & 0x80) && (lengthcount[2] > 0)) {
+			lengthcount[2]--;
 		}
 
-		if (!(PSG[0xC] & 0x20))	{ /* Make sure loop flag is not set. */
-			if (lengthcount[3] > 0) {
-				lengthcount[3]--;
-			}
+		/* decrease noise channel conter */
+		if (!(PSG[0xC] & 0x20) && (lengthcount[3] > 0)) {
+			lengthcount[3]--;
 		}
 
+		/* decrease square1 channel counters */
+		if (!(PSG[0] & 0x20) && (lengthcount[0] > 0)) {
+			lengthcount[0]--;
+		}
+
+		/* decrease square2 channel counters */
+		if (!(PSG[4] & 0x20) && (lengthcount[1] > 0)) {
+			lengthcount[1]--;
+		}
+
+		/* Process square channel */
 		for (P = 0; P < 2; P++) {
-			if (!(PSG[P << 2] & 0x20)) { /* Make sure loop flag is not set. */
-				if (lengthcount[P] > 0) {
-					lengthcount[P]--;
-				}
-			}
-
 			/* Frequency Sweep Code Here */
 			/* xxxx 0000 */
 			/* xxxx = hz.  120/(x+1)*/
 			/* http://wiki.nesdev.com/w/index.php/APU_Sweep */
-			if (SweepCount[P]) {
+			if(SweepCount[P] > 0) {
 				SweepCount[P]--;
 			}
 			if (!SweepCount[P]) {
-				SweepCount[P] = sweepPeriod[P];
-				if (sweepon[P] && (curfreq[P] >= 8)) {
-					int32 offset = (curfreq[P] >> sweepShift[P]);
-
-					if (PSG[(P << 2) + 0x1] & 0x8) {
-						curfreq[P] -= (offset + (P ^ 1));
-					} else if ((offset + curfreq[P]) < 0x800) {
-						curfreq[P] += offset;
-					}
+				uint8 negate = (PSG[(P << 2) + 0x1] & 0x08) != 0;
+				if (SweepOn[P] && SweepShift[P] && (curfreq[P] >= 0x08) && CheckFreq(curfreq[P], negate)) {
+					int32 Sweep = (curfreq[P] >> SweepShift[P]);
+					curfreq[P] += (negate ? ~(Sweep + (1 - P)) : Sweep);
 				}
 			}
 
-			if (sweepReload[P]) {
-				SweepCount[P] = sweepPeriod[P];
-				sweepReload[P] = 0;
+			if (SweepReload[P] || !SweepCount[P]) {
+				SweepCount[P] = SweepPeriod[P];
+				SweepReload[P] = 0;
 			}
 		}
 	}
@@ -1097,7 +1096,7 @@ void FCEUSND_Reset(void) {
 
 	for (x = 0; x < 2; x++) {
 		wlcount[x] = 2048;
-		sweepon[x] = 0;
+		SweepOn[x] = 0;
 		curfreq[x] = 0;
 		if (nesincsize) { /* lq mode */
 			sqacc[x] = ((uint32)2048 << 17) / nesincsize;
@@ -1301,13 +1300,13 @@ SFORMAT FCEUSND_STATEINFO[] = {
 	{ &lengthcount[1], 4 | FCEUSTATE_RLSB, "LEN1" },
 	{ &lengthcount[2], 4 | FCEUSTATE_RLSB, "LEN2" },
 	{ &lengthcount[3], 4 | FCEUSTATE_RLSB, "LEN3" },
-	{ sweepon, 2, "SWEE" },
+	{ SweepOn, 2, "SWEE" },
 	{ &curfreq[0], 4 | FCEUSTATE_RLSB, "CRF1" },
 	{ &curfreq[1], 4 | FCEUSTATE_RLSB, "CRF2" },
 	{ SweepCount, 2, "SWCT" },
-	{ sweepReload, 2, "SWRL" },
-	{ sweepPeriod, 2, "SWPD" },
-	{ sweepShift, 2, "SWSH" },
+	{ SweepReload, 2, "SWRL" },
+	{ SweepPeriod, 2, "SWPD" },
+	{ SweepShift, 2, "SWSH" },
 
 	{ &SIRQStat, 1, "SIRQ" },
 
@@ -1389,9 +1388,9 @@ void FCEUSND_LoadState(int version) {
 	for (i = 0; i < 2; i++) {
 		RectDutyCount[i] &= 0x7;
 		curfreq[i] &= 0xFFFF;
-		sweepShift[i] &= 0x7;
-		if (!sweepShift[i]) {
-			sweepon[i] = 0;
+		SweepShift[i] &= 0x7;
+		if (!SweepShift[i]) {
+			SweepOn[i] = 0;
 		}
 	}
 
