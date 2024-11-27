@@ -1604,6 +1604,11 @@ void retro_set_environment(retro_environment_t cb) {
 		    false,              /* need_fullpath */
 		    false               /* persistent_data */
 		},
+		{
+		    "nsf|nsfe",         /* extensions */
+		    false,              /* need_fullpath */
+		    false               /* persistent_data */
+		},
 		{ NULL, false, false }
 	};
 
