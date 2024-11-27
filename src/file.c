@@ -43,7 +43,7 @@ static MEMWRAP *MakeMemWrap(FILE *tz) {
 
 	fseek(tz, 0, SEEK_END);
 	tmp->size = ftell(tz);
-	fseek(tz, 0, SEEK_CUR);
+	fseek(tz, 0, SEEK_SET);
 
 	if (!(tmp->data_int = (uint8 *)FCEU_malloc(tmp->size))) {
 		FCEU_free(tmp);
