@@ -31,12 +31,8 @@ typedef struct DRIPSOUND {
 	int16 out;
 } DRIPSOUND;
 
-static DRIPSOUND channel[2];
+static DRIPSOUND drip[2];
 static int32 cvbc = 0;
-
-static void SetOutput(DRIPSOUND *ds, int32 output) {
-	ds->out = output;
-}
 
 static void ChannelReset(DRIPSOUND *ds) {
 	memset(ds->buffer, 0, 256);
@@ -46,7 +42,7 @@ static void ChannelReset(DRIPSOUND *ds) {
 	ds->bufferEmpty = TRUE;
 }
 
-static uint8 ChannelRead(DRIPSOUND *ds, uint16 A) {
+static uint8 ChannelRead(DRIPSOUND *ds) {
 	uint8 result = 0;
 
 	if (ds->bufferFull) {
@@ -64,14 +60,14 @@ static void ChannelWrite(DRIPSOUND *ds, uint16 A, uint8 V) {
 	switch (A & 0x03) {
 	case 0:
 		ChannelReset(ds);
-		SetOutput(ds, 0);
+		ds->out = 0;
 		ds->timer = ds->freq << TIMER_SHIFT;
 		break;
 
 	case 1:
 		if (ds->readPos == ds->writePos) {
 			ds->bufferEmpty = FALSE;
-			SetOutput(ds, V * ds->volume);
+ 			ds->out = V * ds->volume;
 			ds->timer = ds->freq << TIMER_SHIFT;
 		}
 
@@ -89,90 +85,95 @@ static void ChannelWrite(DRIPSOUND *ds, uint16 A, uint8 V) {
 		ds->freq = (ds->freq & 0xFF) | ((V & 0xF) << 8);
 		ds->volume = (V & 0xF0) >> 4;
 		if (!ds->bufferEmpty) {
-			SetOutput(ds, ds->buffer[ds->readPos] * ds->volume);
+			ds->out = ds->buffer[ds->readPos] * ds->volume;
 		}
 		break;
 	}
 }
 
-static int32 GetSample(void) {
-	int32 out = 0;
-	int P;
+static void SyncHQ(int32 ts) {
+	cvbc = ts;
+}
 
-	for (P = 0; P < 2; P++) {
-		DRIPSOUND *ds = &channel[P];
-
-		if (!ds->bufferEmpty) {
-			ds->timer -= nesincsize;
-			while (ds->timer <= 0) {
-				ds->timer += ds->freq << TIMER_SHIFT;
-				if (ds->readPos == ds->writePos) {
-					ds->bufferFull = FALSE;
-				}
-
-				ds->readPos++;
-				SetOutput(ds, ds->buffer[ds->readPos] * ds->volume);
-
-				if (ds->readPos == ds->writePos) {
-					ds->bufferEmpty = TRUE;
-				}
+static int32 GenerateWaveHQ(DRIPSOUND *ds) {
+	if (!ds->bufferEmpty) {
+		ds->timer--;
+		if (ds->timer <= 0) {
+			ds->timer = ds->freq << TIMER_SHIFT;
+			if (ds->readPos == ds->writePos) {
+				ds->bufferFull = FALSE;
 			}
+
+			ds->readPos++;
+
+			if (ds->readPos == ds->writePos) {
+				ds->bufferEmpty = TRUE;
+			}
+
+			ds->out = ds->buffer[ds->readPos] * ds->volume;
 		}
-		out += ds->out;
 	}
-	return out;
+	return ds->out;
+}
+
+static int32 GenerateWaveLQ(DRIPSOUND *ds) {
+	if (!ds->bufferEmpty) {
+		ds->timer -= nesincsize;
+
+		while (ds->timer <= 0) {
+			ds->timer += ds->freq << TIMER_SHIFT;
+
+			if (ds->readPos == ds->writePos) {
+				ds->bufferFull = FALSE;
+			}
+
+			ds->readPos++;
+
+			if (ds->readPos == ds->writePos) {
+				ds->bufferEmpty = TRUE;
+			}
+
+			ds->out = ds->buffer[ds->readPos] * ds->volume;
+		}
+	}
+	return ds->out;
+}
+
+static void DoDRIPSoundHQ(void) {
+	int V;
+
+	for (V = cvbc; V < (int)SOUNDTS; V++) {
+		int32 out = 0;
+
+		out += GenerateWaveHQ(&drip[0]);
+		out += GenerateWaveHQ(&drip[1]);
+		if (out & 0xFFFF0000) FCEU_printf("V = %08x\n", WaveHi[V]);
+
+		WaveHi[V] += out;
+	}
+
+	cvbc = SOUNDTS;
 }
 
 static void DRIPSound(void) {
-	int P, V;
+	int V;
 	int start = cvbc;
 	int end = ((int)SOUNDTS << 16) / soundtsinc;
 
 	if (end <= start) {
 		return;
 	}
-	cvbc = end;
 
 	for (V = start; V < end; V++) {
-		Wave[V >> 4] += GetSample() >> 4;
+		int32 out = 0;
+
+		out += GenerateWaveLQ(&drip[0]) >> 4;
+		out += GenerateWaveLQ(&drip[1]) >> 4;
+
+		Wave[V >> 4] += out;
 	}
-}
 
-static int32 GetSampleHQ(void) {
-	int32 out = 0;
-	int P;
-
-	for (P = 0; P < 2; P++) {
-		DRIPSOUND *ds = &channel[P];
-
-		if (!ds->bufferEmpty) {
-			ds->timer--;
-			if (ds->timer <= 0) {
-				ds->timer = ds->freq << TIMER_SHIFT;
-				if (ds->readPos == ds->writePos) {
-					ds->bufferFull = FALSE;
-				}
-
-				ds->readPos++;
-				SetOutput(ds, ds->buffer[ds->readPos] * ds->volume);
-
-				if (ds->readPos == ds->writePos) {
-					ds->bufferEmpty = TRUE;
-				}
-			}
-		}
-		out += ds->out;
-	}
-	return out;
-}
-
-static void DoDRIPSoundHQ(void) {
-	int P, V;
-
-	for (V = cvbc; V < (int)SOUNDTS; V++) {
-		WaveHi[V] += GetSampleHQ();
-	}
-	cvbc = SOUNDTS;
+	cvbc = end;
 }
 
 static void DoDripSound(int Count) {
@@ -180,18 +181,15 @@ static void DoDripSound(int Count) {
 	cvbc = Count;
 }
 
-static void SyncHQ(int32 ts) {
-	cvbc = ts;
-}
-
 DECLFR(DRIPSound_Read) {
-	if (A & 0x800) {
-		return (ChannelRead(&channel[1], A));
-	}
-	return (ChannelRead(&channel[0], A));
+	int idx = (A & 0x800) ? 1 : 0;
+
+	return (ChannelRead(&drip[idx]));
 }
 
 DECLFW(DRIPSound_Write) {
+	int idx = (A & 0x04) ? 1 : 0;
+
 	if (FSettings.SndRate > 0) {
 		if (FSettings.soundq >= 1) {
 			DoDRIPSoundHQ();
@@ -199,11 +197,8 @@ DECLFW(DRIPSound_Write) {
 			DRIPSound();
 		}
 	}
-	if (A & 0x04) {
-		ChannelWrite(&channel[1], A, V);
-	} else {
-		ChannelWrite(&channel[0], A, V);
-	}
+
+	ChannelWrite(&drip[idx], A, V);
 }
 
 static void DRIPSound_SC(void) {
@@ -211,40 +206,40 @@ static void DRIPSound_SC(void) {
 	GameExpSound[0].HiSync = SyncHQ;
 	GameExpSound[0].HiFill = DoDRIPSoundHQ;
 	GameExpSound[0].RChange = DRIPSound_SC;
-	channel[0].timer = 0;
-	channel[1].timer = 0;
+	drip[0].timer = 0;
+	drip[1].timer = 0;
 	cvbc = 0;
 }
 
 void DRIPSound_ESI(void) {
 	GameExpSound[0].RChange = DRIPSound_SC;
 
-	ChannelReset(&channel[0]);
-	ChannelReset(&channel[1]);
+	ChannelReset(&drip[0]);
+	ChannelReset(&drip[1]);
 
 	DRIPSound_SC();
 }
 
 void DRIPSound_AddStateInfo(void) {
-	AddExState(channel[0].buffer,     256, 0, "FF00");
-	AddExState(&channel[0].readPos,     1, 0, "RDP0");
-	AddExState(&channel[0].writePos,    1, 0, "WRP0");
-	AddExState(&channel[0].bufferFull,  1, 0, "FUL0");
-	AddExState(&channel[0].bufferEmpty, 1, 0, "EMT0");
-	AddExState(&channel[0].freq,        2, 0, "FRQ0");
-	AddExState(&channel[0].volume,      1, 0, "VOL0");
-	AddExState(&channel[0].timer,       4, 0, "TIM0");
-	AddExState(&channel[0].out,         2, 0, "POS0");
+	AddExState(drip[0].buffer,     256, 0, "FF00");
+	AddExState(&drip[0].readPos,     1, 0, "RDP0");
+	AddExState(&drip[0].writePos,    1, 0, "WRP0");
+	AddExState(&drip[0].bufferFull,  1, 0, "FUL0");
+	AddExState(&drip[0].bufferEmpty, 1, 0, "EMT0");
+	AddExState(&drip[0].freq,        2, 0, "FRQ0");
+	AddExState(&drip[0].volume,      1, 0, "VOL0");
+	AddExState(&drip[0].timer,       4, 0, "TIM0");
+	AddExState(&drip[0].out,         2, 0, "POS0");
 
-	AddExState(channel[1].buffer,     256, 0, "FF01");
-	AddExState(&channel[1].readPos,     1, 0, "RDP1");
-	AddExState(&channel[1].writePos,    1, 0, "WRP1");
-	AddExState(&channel[1].bufferFull,  1, 0, "FUL1");
-	AddExState(&channel[1].bufferEmpty, 1, 0, "EMT1");
-	AddExState(&channel[1].freq,        2, 0, "FRQ1");
-	AddExState(&channel[1].volume,      1, 0, "VOL1");
-	AddExState(&channel[1].timer,       4, 0, "TIM1");
-	AddExState(&channel[1].out,         2, 0, "POS1");
+	AddExState(drip[1].buffer,     256, 0, "FF01");
+	AddExState(&drip[1].readPos,     1, 0, "RDP1");
+	AddExState(&drip[1].writePos,    1, 0, "WRP1");
+	AddExState(&drip[1].bufferFull,  1, 0, "FUL1");
+	AddExState(&drip[1].bufferEmpty, 1, 0, "EMT1");
+	AddExState(&drip[1].freq,        2, 0, "FRQ1");
+	AddExState(&drip[1].volume,      1, 0, "VOL1");
+	AddExState(&drip[1].timer,       4, 0, "TIM1");
+	AddExState(&drip[1].out,         2, 0, "POS1");
 
 	AddExState(&cvbc,                   4, 0, "CVBC");
 }

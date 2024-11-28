@@ -395,13 +395,15 @@ static void FrameSoundStuff(int V) {
 	DoTriangle();
 
 	/* Envelope decay, linear counter, length counter, freq Sweep */
-	if (!(V & 1)) {
-		/* decrease triagle channel counter */
+
+	/* Length counters and frequency sweep, running at odd frame intervals */
+	if (V & 1) {
+		/* Decrease triagle channel counter */
 		if (!(PSG[8] & 0x80) && (lengthcount[2] > 0)) {
 			lengthcount[2]--;
 		}
 
-		/* decrease noise channel conter */
+		/* Decrease noise channel conter */
 		if (!(PSG[0xC] & 0x20) && (lengthcount[3] > 0)) {
 			lengthcount[3]--;
 		}
@@ -411,12 +413,12 @@ static void FrameSoundStuff(int V) {
 			lengthcount[0]--;
 		}
 
-		/* decrease square2 channel counters */
+		/* Decrease square2 channel counters */
 		if (!(PSG[4] & 0x20) && (lengthcount[1] > 0)) {
 			lengthcount[1]--;
 		}
 
-		/* Process square channel */
+		/* Process square channel frequency sweep */
 		for (P = 0; P < 2; P++) {
 			/* Frequency Sweep Code Here */
 			/* xxxx 0000 */
@@ -427,7 +429,8 @@ static void FrameSoundStuff(int V) {
 			}
 			if (!SweepCount[P]) {
 				uint8 negate = (PSG[(P << 2) + 0x1] & 0x08) != 0;
-				if (SweepOn[P] && SweepShift[P] && (curfreq[P] >= 0x08) && CheckFreq(curfreq[P], negate)) {
+				uint8 validFreq = CheckFreq(curfreq[P], PSG[(P << 2) + 0x1]);
+				if (SweepOn[P] && SweepShift[P] && (curfreq[P] >= 0x08) && validFreq) {
 					int32 Sweep = (curfreq[P] >> SweepShift[P]);
 					curfreq[P] += (negate ? ~(Sweep + (1 - P)) : Sweep);
 				}
