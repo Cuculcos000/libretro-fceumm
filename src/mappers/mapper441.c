@@ -52,6 +52,8 @@ static DECLFW(M441Write) {
 			reg = V;
 			MMC3_FixPRG();
 			MMC3_FixCHR();
+		} else {
+			CartBW(A, V);
 		}
 	}
 }
@@ -68,7 +70,15 @@ static void M441Power(void) {
 }
 
 void Mapper441_Init(CartInfo *info) {
-	MMC3_Init(info, MMC3B, 0, 0);
+	int ws = (info->PRGRamSize + info->PRGRamSaveSize) / 1024;
+
+	if (!ws) {
+		if (info->battery) {
+			ws = 8;
+		}
+	}
+
+	MMC3_Init(info, MMC3B, ws, info->battery);
 	MMC3_cwrap = M441CW;
 	MMC3_pwrap = M441PW;
 	info->Power = M441Power;
