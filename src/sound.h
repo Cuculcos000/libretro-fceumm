@@ -44,14 +44,6 @@ enum AUDIO_CHANNEL {
 };
 
 typedef struct {
-	uint8 Speed;
-	uint8 Mode;
-	uint8 DecCountTo1;
-	uint8 decvolume;
-	int reloaddec;
-} ENVUNIT;
-
-typedef struct {
 	void (*Fill)(int Count);	/* Low quality ext sound. */
 
 	/* NeoFill is for sound devices that are emulated in a more
