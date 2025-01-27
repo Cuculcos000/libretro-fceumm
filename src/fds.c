@@ -102,6 +102,7 @@ static uint16 mapperFDS_blocklen;   /* length of current block */
 static uint16 mapperFDS_diskaddr;   /* current address relative to blockstart */
 static uint8 mapperFDS_diskaccess;  /* disk needs to be accessed at least once
                                        before writing */
+static uint8 mapperFDS_transferflag;
 
 #define BYTES_PER_SIDE 65500
 
@@ -154,8 +155,24 @@ static void FDSPower(void) {
 	MapIRQHook = FDSFix;
 	GameStateRestore = FDSStateRestore;
 
-	SetReadHandler(0x4020, 0x5FFF, FDSRead);
-	SetWriteHandler(0x4020, 0x5FFF, FDSWrite);
+	SetReadHandler(0x4030, 0x4033, FDSRead);
+	SetWriteHandler(0x4020, 0x4025, FDSWrite);
+
+	SetReadHandler(0x4040, 0x407F, FDSWaveRead);
+	SetReadHandler(0x4090, 0x4090, FDSEnvVolumeRead);
+	SetReadHandler(0x4092, 0x4092, FDSEnvModRead);
+
+	SetWriteHandler(0x4040, 0x407F, FDSWaveWrite);
+	SetWriteHandler(0x4080, 0x4080, FDSSReg0Write);
+	SetWriteHandler(0x4082, 0x4082, FDSSReg1Write);
+	SetWriteHandler(0x4083, 0x4083, FDSSReg2Write);
+	SetWriteHandler(0x4084, 0x4084, FDSSReg3Write);
+	SetWriteHandler(0x4085, 0x4085, FDSSReg4Write);
+	SetWriteHandler(0x4086, 0x4086, FDSSReg5Write);
+	SetWriteHandler(0x4087, 0x4087, FDSSReg6Write);
+	SetWriteHandler(0x4088, 0x4088, FDSSReg7Write);
+	SetWriteHandler(0x4089, 0x4089, FDSSReg8Write);
+	SetWriteHandler(0x408A, 0x408A, FDSSReg9Write);
 
 	SetWriteHandler(0x6000, 0xDFFF, CartBW);
 	SetReadHandler(0x6000, 0xFFFF, CartBR);
@@ -176,6 +193,7 @@ static void FDSPower(void) {
 	mapperFDS_blocklen = 0;
 	mapperFDS_diskaddr = 0;
 	mapperFDS_diskaccess = 0;
+	mapperFDS_transferflag = FALSE;
 }
 
 static uint8 isDiskInserted(void) {
@@ -238,6 +256,7 @@ static void FDSFix(int a) {
 	if (DiskSeekIRQ > 0) {
 		DiskSeekIRQ -= a;
 		if (DiskSeekIRQ <= 0) {
+			mapperFDS_transferflag = TRUE;
 			if (mapperFDS_control & 0x80) {
 				X6502_IRQBegin(FCEU_IQEXT2);
 			}
@@ -246,91 +265,66 @@ static void FDSFix(int a) {
 }
 
 static DECLFR(FDSRead) {
-	uint8 ret = 0;
+	uint8 ret = cpu.openbus;
 
 	if (!DiskIOEnabled) {
 		return ret;
 	}
 
-	if ((A >= 0x4040) && (A <= 0x407F)) {
-		return FDSWaveRead(A);
-	}
-
 	switch (A) {
 	case 0x4030:
-		ret = 0x80;
-
-		/* Cheap hack. */
-		if (cpu.IRQlow & FCEU_IQEXT) {
-			ret |= 1;
-		}
-		if (cpu.IRQlow & FCEU_IQEXT2) {
-			ret |= 2;
-		}
-#ifdef FCEUDEF_DEBUGGER
-		if (!fceuindbg)
-#endif
-		{
-			X6502_IRQEnd(FCEU_IQEXT);
-			X6502_IRQEnd(FCEU_IQEXT2);
-		}
+		ret &= 0x2C;
+		ret |= (cpu.IRQlow & FCEU_IQEXT) ? 0x01 : 0;
+		ret |= mapperFDS_transferflag ? 0x02 : 0;
+		ret |= 0x80; /* disk is readable/writeable */
+		X6502_IRQEnd(FCEU_IQEXT);
+		X6502_IRQEnd(FCEU_IQEXT2);
+		mapperFDS_transferflag = FALSE;
 		return ret;
 
 	case 0x4031:
 		ret = 0xFF;
-		if (isDiskInserted() && (mapperFDS_control & 0x04)) {
-			mapperFDS_diskaccess = 1;
-			if (mapperFDS_diskaddr < mapperFDS_blocklen) {
-				ret = disk_read(mapperFDS_blockstart + mapperFDS_diskaddr);
-				switch (mapperFDS_blockID) {
-				case DSK_FILEHDR:
-					switch (mapperFDS_diskaddr) {
-					case 13: mapperFDS_filesize = ret; break;
-					case 14: mapperFDS_filesize |= (ret << 8); break;
-					default: break;
-					}
-					break;
-				}
-				mapperFDS_diskaddr++;
-			}
-			DiskSeekIRQ = 150;
-			X6502_IRQEnd(FCEU_IQEXT2);
+		if (!isDiskInserted()) {
+			return ret;
 		}
+		if  (!(mapperFDS_control & 0x04)) {
+			return ret;
+		}
+		mapperFDS_diskaccess = 1;
+		if (mapperFDS_diskaddr < mapperFDS_blocklen) {
+			ret = disk_read(mapperFDS_blockstart + mapperFDS_diskaddr);
+			switch (mapperFDS_blockID) {
+			case DSK_FILEHDR:
+				switch (mapperFDS_diskaddr) {
+				case 13: mapperFDS_filesize = ret; break;
+				case 14: mapperFDS_filesize |= (ret << 8); break;
+				default: break;
+				}
+				break;
+			}
+			mapperFDS_diskaddr++;
+		}
+		DiskSeekIRQ = 150;
+		X6502_IRQEnd(FCEU_IQEXT2);
+		mapperFDS_transferflag = FALSE;
 		return ret;
 
 	case 0x4032:
-		ret = 0x40;
-		if (!isDiskInserted()) {
-			ret |= 5;
-		}
-		if (!isDiskInserted() || !(mapperFDS_control & 0x01) ||
-		    (mapperFDS_control & 0x02)) {
-			ret |= 2;
-		}
+		ret &= 0xF8;
+		/* disk not inserted, not writable */
+		ret |= !isDiskInserted() ? 0x05 : 0;
+		/* disk not inserted, not motorOn, resettransfer */
+		ret |= (!isDiskInserted() || !(mapperFDS_control & 0x01) || (mapperFDS_control & 0x02)) ? 0x02 : 0;
 		return ret;
 
 	case 0x4033:
 		return 0x80; /* battery */
-
-	case 0x4090:
-		return FDSEnvVolumeRead(A);
-
-	case 0x4092:
-		return FDSEnvModRead(A);
 	}
 
-	return cpu.openbus;
+	return ret;
 }
 
 static DECLFW(FDSWrite) {
-	if (!DiskIOEnabled && (A >= 0x4024)) {
-		return;
-	}
-
-	if ((A >= 0x4040) && (A <= 0x407F)) {
-		FDSWaveWrite(A, V);
-	}
-
 	switch (A) {
 	case 0x4020:
 		IRQLatch &= 0xFF00;
@@ -381,6 +375,9 @@ static DECLFW(FDSWrite) {
 				mapperFDS_diskaddr++;
 			}
 		}
+		DiskSeekIRQ = 150;
+		X6502_IRQEnd(FCEU_IQEXT2);
+		mapperFDS_transferflag = FALSE;
 		break;
 
 	case 0x4025:
@@ -423,46 +420,6 @@ static DECLFW(FDSWrite) {
 		X6502_IRQEnd(FCEU_IQEXT2);
 		mapperFDS_control = V;
 		setmirror(((V >> 3) & 1) ^ 1);
-		break;
-
-	case 0x4080:
-		FDSSReg0Write(A, V);
-		break;
-
-	case 0x4082:
-		FDSSReg1Write(A, V);
-		break;
-
-	case 0x4083:
-		FDSSReg2Write(A, V);
-		break;
-
-	case 0x4084:
-		FDSSReg3Write(A, V);
-		break;
-
-	case 0x4085:
-		FDSSReg4Write(A, V);
-		break;
-
-	case 0x4086:
-		FDSSReg5Write(A, V);
-		break;
-
-	case 0x4087:
-		FDSSReg6Write(A, V);
-		break;
-
-	case 0x4088:
-		FDSSReg7Write(A, V);
-		break;
-
-	case 0x4089:
-		FDSSReg8Write(A, V);
-		break;
-
-	case 0x408A:
-		FDSSReg9Write(A, V);
 		break;
 	}
 }
