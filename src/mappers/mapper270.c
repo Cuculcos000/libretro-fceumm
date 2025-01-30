@@ -39,21 +39,21 @@ static void Sync(void) {
 		break;
 	case 2:
 		mblock |= (onebus.cpu41xx[0x2C] & 0x02) << 10; /* PRG/CHR A24 */
-		mblock |= (onebus.cpu41xx[0x2C] & 0x01) << 11; /* PRG/CHR A25 */
+		mblock |= (onebus.cpu41xx[0x2C] & 0x01) << 12; /* PRG/CHR A25 */
 		break;
 	case 3:
 		mblock |= (onebus.cpu41xx[0x2C] & 0x04) << 9; /* PRG/CHR A24 */
 		break;
 	case 0:
 	default:
-		mblock |= (onebus.cpu41xx[0x2C] & 0x02) << 10; /* PRG/CHR A24 */
-		mblock |= (onebus.cpu41xx[0x2C] & 0x04) <<  9; /* PRG/CHR A24 */
-		mblock |= (onebus.cpu41xx[0x2C] & 0x01) << 11; /* PRG/CHR A25 */
+		mblock |= (onebus.cpu41xx[0x2C] & 0x06) ? 0x800 : 0; /* PRG/CHR A24 */
+		mblock |= (onebus.cpu41xx[0x2C] & 0x01) << 12; /* PRG/CHR A25 */
 		break;
 	}
 	OneBus_FixPRG(0x07FF, mblock);
 	if (reg4242 & 0x01) {
 		/* CHR-RAM enabled, use 8K unbancked CHR RAM */
+		SetupCartCHRMapping(0, CHRRAM, CHRRAMSIZE, TRUE);
 		setchr8(0);
 	} else {
 		OneBus_FixCHR(0x3FFF, mblock << 3);
@@ -67,11 +67,6 @@ static DECLFR(M270ReadJumperDetect) {
 
 static DECLFW(M270WriteCHRRAMEnable) {
 	reg4242 = V;
-	if (CHRptr[0] && (reg4242 & 0x01)) {
-		SetupCartCHRMapping(0, CHRptr[0], CHRsize[0], TRUE);
-	} else {
-		SetupCartCHRMapping(0, PRGptr[0], PRGsize[0], FALSE);
-	}
 	Sync();
 }
 
@@ -84,7 +79,6 @@ static void M270Power(void) {
 }
 
 static void M270Reset(void) {
-	SetupCartCHRMapping(0, PRGptr[0], PRGsize[0], FALSE);
 	dipsw = !dipsw; /* toggle jumper */
 	reg4242 = 0;
 	onebus.cpu41xx[0x2C] = 0;
@@ -94,7 +88,7 @@ static void M270Reset(void) {
 void Mapper270_Init(CartInfo *info) {
 	int ws = (info->PRGRamSize + info->PRGRamSaveSize) / 1024;
 
-	if (!ws) {
+	if (!info->iNES2) {
 		ws = 8;
 	}
 

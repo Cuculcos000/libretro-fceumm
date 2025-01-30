@@ -63,8 +63,8 @@ typedef struct mem_t {
 } mem_t;
 
 typedef struct romData_t {
-	mem_t prg; /* size in 16k banks */
-	mem_t chr; /* size in 8k banks */
+	mem_t prg;
+	mem_t chr;
 	mem_t misc;
 	mem_t disk;
 	mem_t disko;

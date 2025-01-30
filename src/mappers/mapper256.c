@@ -103,7 +103,9 @@ static DECLFW(M256WriteCPU410X) {
 }
 
 static DECLFW(M256WriteMMC3) {
-	V = (V & 0xF8) | mmc3Mangle[iNESCart.submapper][V & 0x07];
+	if (!(A & 0x01)) {
+		V = (V & 0xF8) | mmc3Mangle[iNESCart.submapper][V & 0x07];
+	}
 	OneBus_WriteMMC3(A, V);
 }
 
@@ -117,7 +119,7 @@ static void M256Power(void) {
 void Mapper256_Init(CartInfo *info) {
 	int ws = (info->PRGRamSize + info->PRGRamSaveSize) / 1024;
 
-	if (!ws) {
+	if (!info->iNES2) {
 		ws = 8;
 	}
 
