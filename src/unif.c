@@ -748,26 +748,26 @@ static int LoadUNIFChunks(FCEUFILE *fp) {
 }
 
 static int InitializeBoard(void) {
-	int x = 0;
+	BMAPPING *tmp = bmap;
 
 	if (!sboardname)
 		return (0);
 
 	CHRRAMSIZE = 0;
 
-	while (bmap[x].name) {
+	while (tmp->name) {
 		/* ignore case during board name comparing */
-		if (string_is_equal_case_insensitive((const char *)sboardname, (const char *)bmap[x].name)) {
+		if (string_is_equal_case_insensitive((const char *)sboardname, (const char *)tmp->name)) {
 			if (ROM.chr.size == 0) {
-				if (bmap[x].flags & BMCFLAG_16KCHRR) {
+				if (tmp->flags & BMCFLAG_16KCHRR) {
 					CHRRAMSIZE = 16;
-				} else if (bmap[x].flags & BMCFLAG_32KCHRR) {
+				} else if (tmp->flags & BMCFLAG_32KCHRR) {
 					CHRRAMSIZE = 32;
-				} else if (bmap[x].flags & BMCFLAG_128KCHRR) {
+				} else if (tmp->flags & BMCFLAG_128KCHRR) {
 					CHRRAMSIZE = 128;
-				} else if (bmap[x].flags & BMCFLAG_256KCHRR) {
+				} else if (tmp->flags & BMCFLAG_256KCHRR) {
 					CHRRAMSIZE = 256;
-				} else if (bmap[x].flags & BMCFLAG_512KCHRR) {
+				} else if (tmp->flags & BMCFLAG_512KCHRR) {
 					CHRRAMSIZE = 512;
 				} else {
 					CHRRAMSIZE = 8;
@@ -781,23 +781,23 @@ static int InitializeBoard(void) {
 					return (-1);
 				}
 			}
-			if (bmap[x].flags & BMCFLAG_FORCE4) {
+			if (tmp->flags & BMCFLAG_FORCE4) {
 				mirrortodo = 4;
 			}
 			MooMirroring();
 
-			if (bmap[x].mapper >= 0) {
-				iNESCart.mapper = bmap[x].mapper;
+			if (tmp->mapper >= 0) {
+				iNESCart.mapper = tmp->mapper;
 			}
 			if (submapper >= 0) {
 				iNESCart.submapper = (uint8)submapper;
 			}
 			GameInfo->cspecial = cspecial;
 
-			bmap[x].init(&iNESCart);
+			tmp->init(&iNESCart);
 			return (1);
 		}
-		x++;
+		tmp++;
 	}
 	FCEU_printf("\n");
 	FCEU_PrintError(" Board type not supported, '%s'.\n", boardname);
