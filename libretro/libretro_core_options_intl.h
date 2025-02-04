@@ -519,7 +519,7 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_AR,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_AR,
@@ -1147,7 +1147,7 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_AST,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_AST,
@@ -1775,7 +1775,7 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_CA,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_CA,
@@ -2403,7 +2403,7 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_CHS,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_CHS,
@@ -3031,7 +3031,7 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_CHT,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_CHT,
@@ -3659,7 +3659,7 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_CS,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_CS,
@@ -4287,7 +4287,7 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_CY,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_CY,
@@ -4915,7 +4915,7 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_DA,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_DA,
@@ -5543,7 +5543,7 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_DE,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_DE,
@@ -6171,7 +6171,7 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_EL,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_EL,
@@ -6799,7 +6799,7 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_EO,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_EO,
@@ -7427,7 +7427,7 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_ES,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_ES,
@@ -8055,7 +8055,7 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_FA,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_FA,
@@ -8683,7 +8683,7 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_FI,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_FI,
@@ -9311,7 +9311,7 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_FR,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_FR,
@@ -9939,7 +9939,7 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_GL,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_GL,
@@ -10567,7 +10567,7 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_HE,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_HE,
@@ -11195,7 +11195,7 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_HU,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_HU,
@@ -11823,7 +11823,7 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_ID,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_ID,
@@ -12451,7 +12451,7 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_IT,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_IT,
@@ -13079,7 +13079,7 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_JA,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_JA,
@@ -13707,7 +13707,7 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_KO,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_KO,
@@ -14335,7 +14335,7 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_MT,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_MT,
@@ -14963,7 +14963,7 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_NL,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_NL,
@@ -15591,7 +15591,7 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_OC,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_OC,
@@ -16219,7 +16219,7 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_PL,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_PL,
@@ -16847,7 +16847,7 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_PT_BR,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_PT_BR,
@@ -17475,7 +17475,7 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_PT_PT,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_PT_PT,
@@ -18103,7 +18103,7 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_RO,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_RO,
@@ -18731,7 +18731,7 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_RU,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_RU,
@@ -19359,7 +19359,7 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_SI,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_SI,
@@ -19987,7 +19987,7 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_SK,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_SK,
@@ -20615,7 +20615,7 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_SR,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_SR,
@@ -21243,7 +21243,7 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_SV,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_SV,
@@ -21871,7 +21871,7 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_TR,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_TR,
@@ -22499,7 +22499,7 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_UK,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_UK,
@@ -23127,7 +23127,7 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
+      "fceumm_next_turbo_rate",
       FCEUMM_TURBO_DELAY_LABEL_VN,
       NULL,
       FCEUMM_TURBO_DELAY_INFO_0_VN,

@@ -637,6 +637,7 @@ void input_update(retro_input_state_t *_input_cb) {
 	unsigned player, port;
 	bool palette_prev = FALSE;
 	bool palette_next = FALSE;
+	static int turbo_pressed_count[4][2]; /* counter to keep the button preesed at a minimum number of frames */
 
 	if (nes_input.needs_update) {
 		/* since you can only update input descriptors all at once, its better
@@ -729,8 +730,16 @@ void input_update(retro_input_state_t *_input_cb) {
 				/* Handle Turbo A, B & A+B buttons */
 				for (i = 0; i < TURBO_BUTTONS; i++) {
 					if (input_cb(player, RETRO_DEVICE_JOYPAD, 0, turbomap[i].retro)) {
-						if (!turbo_button_toggle[player][i])
+						if (!turbo_button_toggle[player][i]) {
+							turbo_pressed_count[player][i] = 2;
+							if (turbo_pressed_count[player][i] <= nes_input.turbo_delay + 1) {
+								turbo_pressed_count[player][i] = nes_input.turbo_delay;
+							}
+						}
+						if (turbo_pressed_count[player][i]) {
 							input_buf |= turbomap[i].nes;
+							turbo_pressed_count[player][i]--;
+						}
 						turbo_button_toggle[player][i]++;
 						turbo_button_toggle[player][i] %= nes_input.turbo_delay + 1;
 					} else

@@ -922,14 +922,14 @@ struct retro_core_option_v2_definition option_defs[] = {
       "None",
    },
    {
-      "fceumm_next_turbo_delay",
-      "Turbo Delay (in frames)",
+      "fceumm_next_turbo_rate",
+      "Turbo Rate (in frames)",
       NULL,
       "Repeat rate of turbo buttons in frames.",
       NULL,
       "input",
       {
-         { "1",  NULL },
+         /*{ "1",  NULL },*/
          { "2",  NULL },
          { "3",  NULL },
          { "4",  NULL },

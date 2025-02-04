@@ -1276,7 +1276,7 @@ static void check_variables(bool startup) {
 		}
 	}
 
-	var.key = "fceumm_next_turbo_delay";
+	var.key = "fceumm_next_turbo_rate";
 
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		int value = atoi(var.value);
