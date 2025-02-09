@@ -163,6 +163,7 @@ void FCEUI_GetIVectors(uint16 *reset, uint16 *irq, uint16 *nmi);
 
 void FCEUI_SetLowPass(int q);
 void FCEUI_ReduceDmcPopping(int d);
+void FCEUI_ReverseDMCBitOrder(int d);
 
 void FCEUI_NSFSetVis(int mode);
 int FCEUI_NSFChange(int amount);

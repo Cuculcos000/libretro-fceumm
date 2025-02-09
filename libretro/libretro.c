@@ -1332,6 +1332,13 @@ static void check_variables(bool startup) {
 		FCEUI_ReduceDmcPopping(newval);
 	}
 
+	var.key = "fceumm_next_reversedmcbitorder";
+
+	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		bool newval = (!strcmp(var.value, "enabled"));
+		FCEUI_ReverseDMCBitOrder(newval);
+	}
+
 	var.key = "fceumm_next_sndstereodelay";
 
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {

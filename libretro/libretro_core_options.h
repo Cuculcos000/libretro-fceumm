@@ -473,6 +473,20 @@ struct retro_core_option_v2_definition option_defs[] = {
       "disabled",
    },
    {
+      "fceumm_next_reversedmcbitorder",
+      "Reverse DMC Bit Order",
+      NULL,
+      "Reverses DMC bit order.",
+      NULL,
+      "audio",
+      {
+         { "disabled", NULL },
+         { "enabled", NULL },
+         { NULL, NULL },
+      },
+      "disabled",
+   },
+   {
       "fceumm_next_opll_tone",
       "Sets tone in YM2413 emulator.",
       NULL,

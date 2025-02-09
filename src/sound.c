@@ -405,21 +405,34 @@ static void ClockDMCDMA(int cycles) {
 				DoPCM();
 				soundtsoffs += fudge;
 			}
-			
-			if (dmc.sampleShiftReg & 0x01) {
-				if (dmc.rawDataLatch <= 0x7D) {
-					dmc.rawDataLatch += 2;
+
+			if (FSettings.ReverseDMCBitOrder) {
+				if (dmc.sampleShiftReg & 0x80) {
+					if (dmc.rawDataLatch <= 0x7D) {
+						dmc.rawDataLatch += 2;
+					}
+				} else {
+					if (dmc.rawDataLatch >= 0x02) {
+						dmc.rawDataLatch -= 2;
+					}
 				}
+				dmc.sampleShiftReg <<= 1;
 			} else {
-				if (dmc.rawDataLatch >= 0x02) {
-					dmc.rawDataLatch -= 2;
+				if (dmc.sampleShiftReg & 0x01) {
+					if (dmc.rawDataLatch <= 0x7D) {
+						dmc.rawDataLatch += 2;
+					}
+				} else {
+					if (dmc.rawDataLatch >= 0x02) {
+						dmc.rawDataLatch -= 2;
+					}
 				}
+				dmc.sampleShiftReg >>= 1;
 			}
 		}
 
 		dmc.timer.counter += dmc.timer.period;
 		dmc.bitCounter = (dmc.bitCounter + 1) & 7;
-		dmc.sampleShiftReg >>= 1;
 		if (dmc.bitCounter == 0) {
 			if (!dmc.dmaBufferValid)
 				dmc.sampleValid = FALSE;
@@ -1234,6 +1247,10 @@ void FCEUI_SetSoundQuality(int quality) {
 
 void FCEUI_ReduceDmcPopping(int d) {
 	FSettings.ReduceDMCPopping = d;
+}
+
+void FCEUI_ReverseDMCBitOrder(int d) {
+	FSettings.ReverseDMCBitOrder = d;
 }
 
 void FCEUI_SetSoundVolume(int channel, int volume) {
